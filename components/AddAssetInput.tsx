@@ -7,8 +7,7 @@ import {
   Text, 
   StyleSheet, 
   FlatList, 
-  Pressable, 
-  ActivityIndicator 
+  Pressable
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { cryptoService, SearchResult } from '@/lib/services/CryptoService';
@@ -23,7 +22,6 @@ export const AddAssetInput: React.FC<AddAssetInputProps> = ({
   disabled = false 
 }) => {
   const [input, setInput] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [debouncedInput, setDebouncedInput] = useState('');
   const debounceTimeoutRef = useRef<number | undefined>(undefined);
 
@@ -39,7 +37,6 @@ export const AddAssetInput: React.FC<AddAssetInputProps> = ({
     // Set new timeout for debounced search
     debounceTimeoutRef.current = setTimeout(() => {
       setDebouncedInput(text);
-      setShowSuggestions(text.length >= 2);
     }, 300) as number; // 300ms debounce delay
   }, []);
 
@@ -47,7 +44,7 @@ export const AddAssetInput: React.FC<AddAssetInputProps> = ({
   const searchQuery = useQuery({
     queryKey: ['crypto-search', debouncedInput],
     queryFn: () => cryptoService.searchCoins(debouncedInput),
-    enabled: debouncedInput.length >= 2 && showSuggestions,
+    enabled: debouncedInput.length >= 2,
     staleTime: 1000 * 60 * 10, // Cache for 10 minutes 
     retry: 1, // Retry once for faster failure
   });
@@ -56,19 +53,7 @@ export const AddAssetInput: React.FC<AddAssetInputProps> = ({
     onAdd(coin.id, coin.name);
     setInput('');
     setDebouncedInput('');
-    setShowSuggestions(false);
   }, [onAdd]);
-
-  const handleBlur = useCallback(() => {
-    // Delay hiding suggestions to allow for selection
-    setTimeout(() => setShowSuggestions(false), 150);
-  }, []);
-
-  const handleFocus = useCallback(() => {
-    if (input.length >= 2) {
-      setShowSuggestions(true);
-    }
-  }, [input.length]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -80,8 +65,6 @@ export const AddAssetInput: React.FC<AddAssetInputProps> = ({
   }, []);
 
   const suggestions = searchQuery.data || [];
-  const isSearching = searchQuery.isFetching;
-  const hasError = searchQuery.error;
 
   const handleManualAdd = useCallback(() => {
     const trimmed = input.trim();
@@ -91,27 +74,8 @@ export const AddAssetInput: React.FC<AddAssetInputProps> = ({
       onAdd(trimmed);
       setInput('');
       setDebouncedInput('');
-      setShowSuggestions(false);
     }
   }, [input, onAdd, suggestions.length]);
-
-  const renderSuggestion = ({ item }: { item: SearchResult }) => (
-    <Pressable
-      style={({ pressed }) => [
-        styles.suggestion,
-        pressed && styles.suggestionPressed,
-      ]}
-      onPress={() => handleSelectCoin(item)}
-    >
-      <View style={styles.suggestionContent}>
-        <Text style={styles.suggestionSymbol}>{item.symbol}</Text>
-        <Text style={styles.suggestionName}>{item.name}</Text>
-        {item.market_cap_rank && (
-          <Text style={styles.suggestionRank}>#{item.market_cap_rank}</Text>
-        )}
-      </View>
-    </Pressable>
-  );
 
   return (
     <View style={styles.container}>
@@ -119,69 +83,76 @@ export const AddAssetInput: React.FC<AddAssetInputProps> = ({
         <TextInput
           style={[
             styles.input,
-            disabled && styles.inputDisabled,
-            showSuggestions && suggestions.length > 0 && styles.inputWithSuggestions,
-            hasError && styles.inputError,
+            suggestions.length > 0 && styles.inputWithSuggestions,
+            !disabled && styles.inputDisabled
           ]}
-          placeholder="Search crypto (e.g., ethereum, btc)"
+          placeholder="Search cryptocurrencies..."
           placeholderTextColor="#9ca3af"
           value={input}
           onChangeText={handleInputChange}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          autoCapitalize="none"
-          autoCorrect={false}
-          editable={!disabled}
-          returnKeyType="search"
           onSubmitEditing={handleManualAdd}
+          editable={!disabled}
         />
-        
-        {isSearching && (
-          <ActivityIndicator 
-            size="small" 
-            color="#3b82f6" 
-            style={styles.searchingIndicator}
-          />
+        {input.length > 0 && (
+          <Pressable
+            onPress={() => {
+              setInput('');
+              setDebouncedInput('');
+            }}
+            style={styles.clearButton}
+          >
+            <Text style={styles.clearButtonText}>×</Text>
+          </Pressable>
         )}
       </View>
 
-      {/* Error state for search */}
-      {hasError && debouncedInput.length >= 2 && (
-        <Text style={styles.errorText}>
-          {searchQuery.error?.message?.includes('429') 
-            ? 'Search rate limited. Please wait a few minutes before trying again.'
-            : searchQuery.error?.message?.toLowerCase().includes('network')
-            ? 'Network issue. Please check your connection.'
-            : 'Search failed. Please try again.'
-          }
-        </Text>
-      )}
-
-      {showSuggestions && suggestions.length > 0 && (
+      {suggestions.length > 0 && (
         <View style={styles.suggestionsContainer}>
           <FlatList
             data={suggestions}
-            renderItem={renderSuggestion}
             keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.suggestion,
+                  pressed && styles.suggestionPressed
+                ]}
+                onPress={() => handleSelectCoin(item)}
+              >
+                <View style={styles.suggestionContent}>
+                  <View style={styles.suggestionText}>
+                    <Text style={styles.suggestionSymbol}>{item.symbol.toUpperCase()}</Text>
+                    <Text style={styles.suggestionName}>{item.name}</Text>
+                  </View>
+                  <Text style={styles.addIcon}>+</Text>
+                </View>
+              </Pressable>
+            )}
             style={styles.suggestionsList}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-            initialNumToRender={5}        // Render fewer items initially
-            maxToRenderPerBatch={10}      // Batch rendering
-            windowSize={5}                // Smaller window for better performance
-            removeClippedSubviews={true}  // Remove off-screen items
+            initialNumToRender={5}
+            maxToRenderPerBatch={10}
+            windowSize={10}
+            removeClippedSubviews={true}
           />
         </View>
       )}
 
-      {/* Manual add hint */}
-      {input.length > 0 && !showSuggestions && !isSearching && (
-        <Text style={styles.hint}>
-          {suggestions.length > 0 
-            ? `Press Enter to add "${input.trim()}" manually`
-            : 'Search for a cryptocurrency to add it'
-          }
+      {!disabled && input.length > 0 && (
+        <Text style={styles.hintText}>
+           Select a cryptocurrency from the suggestions above to add it to your list
         </Text>
+      )}
+
+      {searchQuery.isError && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>
+            {searchQuery.error?.message?.includes('429') 
+              ? 'API rate limit reached. Please wait a moment before searching again.'
+              : searchQuery.error?.message?.includes('Network') 
+                ? 'Network connection issue. Please check your internet connection.'
+                : 'Failed to search. Please try again.'}
+          </Text>
+        </View>
       )}
     </View>
   );
@@ -214,13 +185,15 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 0,
     borderBottomColor: '#e5e7eb',
   },
-  inputError: {
-    borderColor: '#ef4444',
-  },
-  searchingIndicator: {
+  clearButton: {
     position: 'absolute',
     right: 12,
     top: 12,
+    padding: 5,
+  },
+  clearButtonText: {
+    fontSize: 20,
+    color: '#9ca3af',
   },
   suggestionsContainer: {
     borderWidth: 1,
@@ -250,6 +223,11 @@ const styles = StyleSheet.create({
   },
   suggestionContent: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  suggestionText: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
   suggestionSymbol: {
@@ -261,24 +239,29 @@ const styles = StyleSheet.create({
   suggestionName: {
     fontSize: 14,
     color: '#9ca3af', // Light gray for dark theme
-    flex: 1,
     marginLeft: 8,
   },
-  suggestionRank: {
-    fontSize: 12,
-    color: '#6b7280', // Darker gray for dark theme
-    fontWeight: '500',
+  addIcon: {
+    fontSize: 20,
+    color: '#3b82f6', // Blue accent color
   },
-  hint: {
+  hintText: {
     fontSize: 12,
     color: '#6b7280',
     marginTop: 4,
     fontStyle: 'italic',
   },
+  errorContainer: {
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#ef4444',
+    borderRadius: 6,
+    alignItems: 'center',
+  },
   errorText: {
     fontSize: 12,
-    color: '#ef4444',
-    marginTop: 4,
-    textAlign: 'center',
+    color: '#ffffff',
+    fontWeight: '500',
   },
 });

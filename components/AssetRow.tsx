@@ -10,7 +10,7 @@ interface AssetRowProps {
   onRemove: (id: string) => void;
 }
 
-export const AssetRow = memo<AssetRowProps>(({ asset, onRemove }) => {
+const AssetRowComponent = ({ asset, onRemove }: AssetRowProps) => {
   const swipeableRef = useRef<Swipeable>(null);
 
   const handleRemove = () => {
@@ -96,7 +96,9 @@ export const AssetRow = memo<AssetRowProps>(({ asset, onRemove }) => {
       </View>
     </Swipeable>
   );
-});
+};
+
+export const AssetRow = memo(AssetRowComponent);
 
 const styles = StyleSheet.create({
   container: {

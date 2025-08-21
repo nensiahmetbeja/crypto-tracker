@@ -1,13 +1,13 @@
 // app/index.tsx
 
 import React from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  FlatList, 
   SafeAreaView,
+  RefreshControl
 } from 'react-native';
 import { useCrypto } from '@/lib/store/useCryptoStore';
 import { AssetRow } from '@/components/AssetRow';
@@ -15,15 +15,15 @@ import { AddAssetInput } from '@/components/AddAssetInput';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { TrackedAsset } from '@/lib/types';
 
-export default function CryptoTrackerScreen() {
+export default function CryptoTracker() {
   const { 
-    assets,
+    assets, 
+    addAsset, 
+    removeAsset, 
     isLoading, 
-    isRefreshing,
-    error,
-    addAsset,
-    removeAsset,
-    refetch 
+    error, 
+    refetch,
+    isRefreshing
   } = useCrypto();
 
   const renderAssetRow = ({ item }: { item: TrackedAsset }) => (
@@ -32,11 +32,9 @@ export default function CryptoTrackerScreen() {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <Text style={styles.emptyText}>
-        No cryptocurrencies added yet.
-      </Text>
+      <Text style={styles.emptyText}>No cryptocurrencies added yet</Text>
       <Text style={styles.emptySubtext}>
-        Add one using the input above.
+        Search and add your favorite cryptocurrencies to start tracking
       </Text>
     </View>
   );
