@@ -19,12 +19,27 @@ const COIN_ID_MAP: Record<string, string> = {
 };
 
 /**
- * What the service returns
+ * What our service returns
  */
 export interface AssetQuote {
   priceUsd: number;
   changePercent24h: number;
   lastUpdated: number;
+}
+
+/**
+ * Search result from CoinGecko
+ */
+export interface SearchResult {
+  id: string;           // "ethereum"
+  name: string;         // "Ethereum"
+  symbol: string;       // "ETH"
+  market_cap_rank: number | null;
+  thumb: string;        // Small image URL
+}
+
+interface CoinGeckoSearchResponse {
+  coins: SearchResult[];
 }
 
 class CryptoService {
@@ -57,6 +72,34 @@ class CryptoService {
         return this.fetchWithRetry(url, retries + 1);
       }
       throw error;
+    }
+  }
+
+  /**
+   * Search for cryptocurrencies by name or symbol
+   */
+  async searchCoins(query: string): Promise<SearchResult[]> {
+    if (!query.trim()) return [];
+
+    try {
+      const url = `${this.baseUrl}/search?query=${encodeURIComponent(query.trim())}`;
+      const response = await this.fetchWithRetry(url);
+
+      if (!response.ok) {
+        throw new Error(`Search failed (${response.status})`);
+      }
+
+      const data: CoinGeckoSearchResponse = await response.json();
+      
+      // Return only top 10 results, sorted by market cap rank
+      return data.coins
+        .filter(coin => coin.market_cap_rank !== null)
+        .sort((a, b) => (a.market_cap_rank || 999999) - (b.market_cap_rank || 999999))
+        .slice(0, 10);
+
+    } catch (error) {
+      console.error('Search error:', error);
+      return [];
     }
   }
 

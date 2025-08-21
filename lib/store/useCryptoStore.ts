@@ -16,7 +16,7 @@ interface CryptoStore {
   assets: Asset[];
   
   // Actions
-  addAsset: (id: string) => void;
+  addAsset: (id: string, name?: string) => void;
   removeAsset: (id: string) => void;
 }
 
@@ -31,7 +31,7 @@ export const useCryptoStore = create<CryptoStore>()(
       ],
 
       // Add asset (with deduplication)
-      addAsset: (id: string) => {
+      addAsset: (id: string, name?: string) => {
         const normalizedId = id.toLowerCase().trim();
         if (!normalizedId) return;
 
@@ -42,6 +42,7 @@ export const useCryptoStore = create<CryptoStore>()(
         const newAsset: Asset = {
           id: normalizedId,
           symbol: normalizedId.toUpperCase(),
+          name: name, // Store the full name if provided
         };
 
         set({ assets: [...assets, newAsset] });
