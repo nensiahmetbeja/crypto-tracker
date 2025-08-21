@@ -54,7 +54,7 @@ A simple cryptocurrency tracking application built with React Native, Expo, and 
    # or
    yarn start
    # or
-   expo start
+   npx expo start
    ```
 
 2. **Choose your platform**
@@ -66,10 +66,10 @@ A simple cryptocurrency tracking application built with React Native, Expo, and 
 
 ```bash
 # Build for iOS
-expo build:ios
+npx expo build:ios
 
 # Build for Android
-expo build:android
+npx expo build:android
 ```
 
 ## Project Structure
@@ -173,7 +173,7 @@ private readonly MONTH_LIMIT = 10000; // API calls per month
 ### Debug Mode
 ```bash
 # Enable debug logging
-expo start --dev-client
+npx expo start --dev-client
 ```
 
 ---
