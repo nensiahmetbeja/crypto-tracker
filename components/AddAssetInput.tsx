@@ -196,14 +196,14 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: '#4b5563',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
     paddingRight: 40, // Space for loading indicator
     fontSize: 16,
-    backgroundColor: '#ffffff',
-    color: '#111827',
+    backgroundColor: '#3a3f4b', // Dark input background
+    color: '#ffffff', // White text
   },
   inputDisabled: {
     backgroundColor: '#f9fafb',
@@ -225,10 +225,10 @@ const styles = StyleSheet.create({
   suggestionsContainer: {
     borderWidth: 1,
     borderTopWidth: 0,
-    borderColor: '#d1d5db',
+    borderColor: '#4b5563',
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#3a3f4b', // Dark suggestions background
     maxHeight: 200,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -243,10 +243,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: '#4b5563',
   },
   suggestionPressed: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#4b5563', // Dark pressed state
   },
   suggestionContent: {
     flexDirection: 'row',
@@ -255,18 +255,18 @@ const styles = StyleSheet.create({
   suggestionSymbol: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: '#ffffff', // White text for dark theme
     minWidth: 50,
   },
   suggestionName: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#9ca3af', // Light gray for dark theme
     flex: 1,
     marginLeft: 8,
   },
   suggestionRank: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: '#6b7280', // Darker gray for dark theme
     fontWeight: '500',
   },
   hint: {

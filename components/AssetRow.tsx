@@ -1,7 +1,8 @@
 // components/AssetRow.tsx
 
-import React, { memo } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { memo, useRef } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { TrackedAsset } from '@/lib/types';
 
 interface AssetRowProps {
@@ -10,7 +11,13 @@ interface AssetRowProps {
 }
 
 export const AssetRow = memo<AssetRowProps>(({ asset, onRemove }) => {
-  const handleRemove = () => onRemove(asset.id);
+  const swipeableRef = useRef<Swipeable>(null);
+
+  const handleRemove = () => {
+    onRemove(asset.id);
+    // Close the swipeable after deletion
+    swipeableRef.current?.close();
+  };
 
   const formatPrice = (price: number): string => {
     return new Intl.NumberFormat('en-US', {
@@ -31,96 +38,150 @@ export const AssetRow = memo<AssetRowProps>(({ asset, onRemove }) => {
     return '#6b7280'; // gray
   };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.info}>
-          <Text style={styles.symbol}>{asset.symbol}</Text>
-          
-          {asset.quote ? (
-            <>
-              <Text style={styles.price}>
-                {formatPrice(asset.quote.priceUsd)}
-              </Text>
-              <Text 
-                style={[
-                  styles.change,
-                  { color: getPercentColor(asset.quote.changePercent24h) }
-                ]}
-              >
-                {formatPercent(asset.quote.changePercent24h)}
-              </Text>
-            </>
-          ) : (
-            <Text style={styles.loading}>Loading...</Text>
-          )}
-        </View>
-
+  const renderRightActions = () => {
+    return (
+      <View style={styles.deleteContainer}>
         <Pressable
           onPress={handleRemove}
           style={({ pressed }) => [
-            styles.removeButton,
-            pressed && styles.removeButtonPressed
+            styles.deleteButton,
+            pressed && styles.deleteButtonPressed
           ]}
         >
-          <Text style={styles.removeText}>Remove</Text>
+          <Text style={styles.deleteText}>Delete</Text>
         </Pressable>
       </View>
-    </View>
+    );
+  };
+
+  return (
+    <Swipeable
+      ref={swipeableRef}
+      renderRightActions={renderRightActions}
+      rightThreshold={40}
+      overshootRight={false}
+    >
+      <View style={styles.container}>
+        <View style={styles.content}>
+          {/* Left side - Icon and asset info */}
+          <View style={styles.leftSection}>
+            <View style={styles.iconContainer}>
+              <Text style={styles.iconText}>{asset.symbol.charAt(0)}</Text>
+            </View>
+            <View style={styles.assetInfo}>
+              <Text style={styles.assetName}>{asset.name || asset.symbol}</Text>
+              <Text style={styles.tickerSymbol}>{asset.symbol}</Text>
+            </View>
+          </View>
+
+          {/* Right side - Price and percentage */}
+          <View style={styles.rightSection}>
+            {asset.quote ? (
+              <>
+                <Text style={[
+                  styles.percentageChange,
+                  { color: getPercentColor(asset.quote.changePercent24h) }
+                ]}>
+                  {formatPercent(asset.quote.changePercent24h)}
+                </Text>
+                <Text style={styles.currentPrice}>
+                  {formatPrice(asset.quote.priceUsd)}
+                </Text>
+              </>
+            ) : (
+              <Text style={styles.loading}>Loading...</Text>
+            )}
+          </View>
+        </View>
+      </View>
+    </Swipeable>
   );
 });
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+    backgroundColor: '#282c34', // Dark background matching the image
     borderRadius: 12,
-    marginBottom: 10,
+    marginBottom: 8, // Reduced from 12 to 8 for tighter spacing
     overflow: 'hidden',
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: 12, // Reduced from 16 to 12 for more compact rows
+    minHeight: 64, // Set minimum height to match delete button
   },
-  info: {
+  leftSection: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconContainer: {
+    width: 40, // Reduced from 48 to 40 for better proportion
+    height: 40, // Reduced from 48 to 40 for better proportion
+    borderRadius: 20, // Half of width/height
+    backgroundColor: '#3a3f4b', // Slightly lighter than background
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12, // Reduced from 16 to 12
+  },
+  iconText: {
+    fontSize: 18, // Reduced from 20 to 18
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  assetInfo: {
     flex: 1,
   },
-  symbol: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  price: {
-    fontSize: 16,
-    color: '#374151',
-    marginBottom: 2,
-  },
-  change: {
-    fontSize: 14,
+  assetName: {
+    fontSize: 15, // Reduced from 16 to 15
     fontWeight: '600',
+    color: '#ffffff', // White text for asset name
+    marginBottom: 2, // Reduced from 4 to 2
+  },
+  tickerSymbol: {
+    fontSize: 13, // Reduced from 14 to 13
+    color: '#9ca3af', // Light gray for ticker symbol
+    fontWeight: '500',
+  },
+  rightSection: {
+    alignItems: 'flex-end',
+    marginRight: 12, // Reduced from 16 to 12
+  },
+  percentageChange: {
+    fontSize: 15, // Reduced from 16 to 15
+    fontWeight: '600',
+    marginBottom: 2, // Reduced from 4 to 2
+  },
+  currentPrice: {
+    fontSize: 15, // Reduced from 16 to 15
+    fontWeight: '600',
+    color: '#ffffff', // White text for price
   },
   loading: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontSize: 13, // Reduced from 14 to 13
+    color: '#9ca3af',
     fontStyle: 'italic',
   },
-  removeButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    backgroundColor: '#ffffff',
+  deleteContainer: {
+    backgroundColor: '#ef4444', // Red background for delete action
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    height: '100%',
   },
-  removeButtonPressed: {
-    backgroundColor: '#f9fafb',
+  deleteButton: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
   },
-  removeText: {
+  deleteButtonPressed: {
+    backgroundColor: '#dc2626', // Darker red when pressed
+  },
+  deleteText: {
+    color: '#ffffff',
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
   },
 });

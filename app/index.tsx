@@ -92,7 +92,7 @@ export default function CryptoTrackerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#282c34', // Dark background matching the image
   },
   content: {
     flex: 1,
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#111827',
+    color: '#ffffff', // White text for dark theme
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -120,13 +120,13 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#374151',
+    color: '#ffffff', // White text for dark theme
     marginBottom: 8,
     textAlign: 'center',
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#9ca3af', // Light gray for dark theme
     textAlign: 'center',
   },
   loadingOverlay: {
@@ -134,14 +134,14 @@ const styles = StyleSheet.create({
     bottom: 16,
     left: 16,
     right: 16,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#3a3f4b', // Dark overlay for dark theme
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
   loadingText: {
     fontSize: 14,
-    color: '#374151',
+    color: '#ffffff', // White text for dark theme
     fontWeight: '500',
   },
 });

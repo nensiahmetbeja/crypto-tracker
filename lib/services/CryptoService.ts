@@ -54,6 +54,7 @@ class CryptoService {
       
       // If rate limited (429), retry with backoff
       if (response.status === 429 && retries < this.maxRetries) {
+        console.log("Rate ERROR", response);
         const delay = this.retryDelay * Math.pow(2, retries);
         console.log(`Rate limited, retrying in ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
