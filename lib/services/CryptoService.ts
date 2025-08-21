@@ -18,9 +18,7 @@ const COIN_ID_MAP: Record<string, string> = {
   avax: 'avalanche-2',
 };
 
-/**
- * What our service returns
- */
+
 export interface AssetQuote {
   priceUsd: number;
   changePercent24h: number;

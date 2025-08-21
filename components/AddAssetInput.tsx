@@ -1,6 +1,6 @@
 // components/AddAssetInput.tsx
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { 
   View, 
   TextInput, 
@@ -24,42 +24,76 @@ export const AddAssetInput: React.FC<AddAssetInputProps> = ({
 }) => {
   const [input, setInput] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [debouncedInput, setDebouncedInput] = useState('');
+  const debounceTimeoutRef = useRef<number | undefined>(undefined);
 
-  // Search query - only search if input has 2+ characters
-  const searchQuery = useQuery({
-    queryKey: ['crypto-search', input],
-    queryFn: () => cryptoService.searchCoins(input),
-    enabled: input.length >= 2 && showSuggestions,
-    staleTime: 1000 * 60, // Cache for 1 minute
-  });
-
+  // Debounced search input - reduces API calls
   const handleInputChange = useCallback((text: string) => {
     setInput(text);
-    setShowSuggestions(text.length >= 2);
+    
+    // Clear previous timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    
+    // Set new timeout for debounced search
+    debounceTimeoutRef.current = setTimeout(() => {
+      setDebouncedInput(text);
+      setShowSuggestions(text.length >= 2);
+    }, 300) as number; // 300ms debounce delay
   }, []);
+
+  // Search query - only search if debounced input has 2+ characters
+  const searchQuery = useQuery({
+    queryKey: ['crypto-search', debouncedInput],
+    queryFn: () => cryptoService.searchCoins(debouncedInput),
+    enabled: debouncedInput.length >= 2 && showSuggestions,
+    staleTime: 1000 * 60 * 2, // Cache for 2 minutes
+    retry: 1, // Retry once for faster failure
+  });
 
   const handleSelectCoin = useCallback((coin: SearchResult) => {
     onAdd(coin.id, coin.name);
     setInput('');
+    setDebouncedInput('');
     setShowSuggestions(false);
   }, [onAdd]);
-
-  const handleManualAdd = useCallback(() => {
-    const trimmed = input.trim();
-    if (trimmed) {
-      onAdd(trimmed);
-      setInput('');
-      setShowSuggestions(false);
-    }
-  }, [input, onAdd]);
 
   const handleBlur = useCallback(() => {
     // Delay hiding suggestions to allow for selection
     setTimeout(() => setShowSuggestions(false), 150);
   }, []);
 
+  const handleFocus = useCallback(() => {
+    if (input.length >= 2) {
+      setShowSuggestions(true);
+    }
+  }, [input.length]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const suggestions = searchQuery.data || [];
   const isSearching = searchQuery.isFetching;
+  const hasError = searchQuery.error;
+
+  const handleManualAdd = useCallback(() => {
+    const trimmed = input.trim();
+    if (trimmed && suggestions.length > 0) {
+      // Only allow manual add if there are suggestions available
+      // This prevents random text from being added
+      onAdd(trimmed);
+      setInput('');
+      setDebouncedInput('');
+      setShowSuggestions(false);
+    }
+  }, [input, onAdd, suggestions.length]);
 
   const renderSuggestion = ({ item }: { item: SearchResult }) => (
     <Pressable
@@ -87,12 +121,13 @@ export const AddAssetInput: React.FC<AddAssetInputProps> = ({
             styles.input,
             disabled && styles.inputDisabled,
             showSuggestions && suggestions.length > 0 && styles.inputWithSuggestions,
+            hasError && styles.inputError,
           ]}
           placeholder="Search crypto (e.g., ethereum, btc)"
           placeholderTextColor="#9ca3af"
           value={input}
           onChangeText={handleInputChange}
-          onFocus={() => input.length >= 2 && setShowSuggestions(true)}
+          onFocus={handleFocus}
           onBlur={handleBlur}
           autoCapitalize="none"
           autoCorrect={false}
@@ -110,6 +145,16 @@ export const AddAssetInput: React.FC<AddAssetInputProps> = ({
         )}
       </View>
 
+      {/* Error state for search */}
+      {hasError && debouncedInput.length >= 2 && (
+        <Text style={styles.errorText}>
+          {searchQuery.error?.message?.includes('429') 
+            ? 'Search rate limited. Please wait a moment.'
+            : 'Search failed. Please try again.'
+          }
+        </Text>
+      )}
+
       {showSuggestions && suggestions.length > 0 && (
         <View style={styles.suggestionsContainer}>
           <FlatList
@@ -119,14 +164,21 @@ export const AddAssetInput: React.FC<AddAssetInputProps> = ({
             style={styles.suggestionsList}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
+            initialNumToRender={5}        // Render fewer items initially
+            maxToRenderPerBatch={10}      // Batch rendering
+            windowSize={5}                // Smaller window for better performance
+            removeClippedSubviews={true}  // Remove off-screen items
           />
         </View>
       )}
 
       {/* Manual add hint */}
-      {input.length > 0 && !showSuggestions && (
+      {input.length > 0 && !showSuggestions && !isSearching && (
         <Text style={styles.hint}>
-          Press Enter to add "{input}" manually
+          {suggestions.length > 0 
+            ? `Press Enter to add "${input.trim()}" manually`
+            : 'Search for a cryptocurrency to add it'
+          }
         </Text>
       )}
     </View>
@@ -159,6 +211,9 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     borderBottomColor: '#e5e7eb',
+  },
+  inputError: {
+    borderColor: '#ef4444',
   },
   searchingIndicator: {
     position: 'absolute',
@@ -217,5 +272,11 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginTop: 4,
     fontStyle: 'italic',
+  },
+  errorText: {
+    fontSize: 12,
+    color: '#ef4444',
+    marginTop: 4,
+    textAlign: 'center',
   },
 });
