@@ -18,10 +18,7 @@ export default function RootLayout() {
       <QueryClientProvider client={client}>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <Stack>
-            {/* keep tabs if you want, or change to single screen */}
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            {/* remove if you deleted this file */}
-            {/* <Stack.Screen name="+not-found" /> */}
+            <Stack.Screen name="index" options={{ headerShown: false }} />
           </Stack>
           <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
         </ThemeProvider>
