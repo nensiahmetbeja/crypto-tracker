@@ -72,7 +72,7 @@ expo build:ios
 expo build:android
 ```
 
-## 🏗Project Structure
+## Project Structure
 
 
 ## Key Design Decisions
@@ -142,7 +142,7 @@ private readonly MINUTE_LIMIT = 5;   // API calls per minute
 private readonly MONTH_LIMIT = 10000; // API calls per month
 ```
 
-## 🧪 Testing
+## Testing
 
 ### Manual Testing
 1. **Add Assets**: Search and add different cryptocurrencies
