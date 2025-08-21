@@ -3,6 +3,7 @@
 import React, { memo, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
+import { MaterialIcons } from '@expo/vector-icons';
 import { TrackedAsset } from '@/lib/types';
 
 interface AssetRowProps {
@@ -48,7 +49,7 @@ const AssetRowComponent = ({ asset, onRemove }: AssetRowProps) => {
             pressed && styles.deleteButtonPressed
           ]}
         >
-          <Text style={styles.deleteText}>Delete</Text>
+          <MaterialIcons name="delete" size={24} color="#ffffff" />
         </Pressable>
       </View>
     );
@@ -180,10 +181,5 @@ const styles = StyleSheet.create({
   },
   deleteButtonPressed: {
     backgroundColor: '#dc2626', // Darker red when pressed
-  },
-  deleteText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
   },
 });

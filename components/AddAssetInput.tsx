@@ -9,6 +9,7 @@ import {
   FlatList, 
   Pressable
 } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { cryptoService, SearchResult } from '@/lib/services/CryptoService';
 
@@ -101,7 +102,7 @@ export const AddAssetInput: React.FC<AddAssetInputProps> = ({
             }}
             style={styles.clearButton}
           >
-            <Text style={styles.clearButtonText}>×</Text>
+            <MaterialIcons name="close" size={20} color="#9ca3af" />
           </Pressable>
         )}
       </View>
@@ -124,7 +125,7 @@ export const AddAssetInput: React.FC<AddAssetInputProps> = ({
                     <Text style={styles.suggestionSymbol}>{item.symbol.toUpperCase()}</Text>
                     <Text style={styles.suggestionName}>{item.name}</Text>
                   </View>
-                  <Text style={styles.addIcon}>+</Text>
+                  <MaterialIcons name="add-circle-outline" size={20} color="#10b981" />
                 </View>
               </Pressable>
             )}
@@ -191,10 +192,6 @@ const styles = StyleSheet.create({
     top: 12,
     padding: 5,
   },
-  clearButtonText: {
-    fontSize: 20,
-    color: '#9ca3af',
-  },
   suggestionsContainer: {
     borderWidth: 1,
     borderTopWidth: 0,
@@ -240,10 +237,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#9ca3af', // Light gray for dark theme
     marginLeft: 8,
-  },
-  addIcon: {
-    fontSize: 20,
-    color: '#3b82f6', // Blue accent color
   },
   hintText: {
     fontSize: 12,

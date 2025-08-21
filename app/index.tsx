@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   RefreshControl
 } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useCrypto } from '@/lib/store/useCryptoStore';
 import { AssetRow } from '@/components/AssetRow';
 import { AddAssetInput } from '@/components/AddAssetInput';
@@ -32,6 +33,7 @@ export default function CryptoTracker() {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
+      <MaterialIcons name="add-circle-outline" size={64} color="#6b7280" />
       <Text style={styles.emptyText}>No cryptocurrencies added yet</Text>
       <Text style={styles.emptySubtext}>
         Search and add your favorite cryptocurrencies to start tracking
@@ -43,7 +45,10 @@ export default function CryptoTracker() {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         {/* Header */}
-        <Text style={styles.title}>Crypto Tracker</Text>
+        <View style={styles.header}>
+          <MaterialIcons name="trending-up" size={32} color="#10b981" />
+          <Text style={styles.title}>Crypto Tracker</Text>
+        </View>
 
         {/* Add Asset Input */}
         <AddAssetInput onAdd={addAsset} disabled={isLoading} />
@@ -79,6 +84,7 @@ export default function CryptoTracker() {
         {/* Loading State */}
         {isLoading && (
           <View style={styles.loadingOverlay}>
+            <MaterialIcons name="currency-bitcoin" size={48} color="#10b981" />
             <Text style={styles.loadingText}>Loading prices...</Text>
           </View>
         )}
@@ -96,12 +102,17 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
   title: {
     fontSize: 28,
     fontWeight: '700',
     color: '#ffffff', // White text for dark theme
     textAlign: 'center',
-    marginBottom: 24,
+    marginLeft: 12,
   },
   listContent: {
     paddingBottom: 32,
@@ -141,5 +152,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#ffffff', // White text for dark theme
     fontWeight: '500',
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    backgroundColor: '#3a3f4b', // Dark overlay for dark theme
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#9ca3af', // Light gray for dark theme
+    marginLeft: 8,
   },
 });
