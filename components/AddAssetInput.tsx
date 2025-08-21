@@ -48,7 +48,7 @@ export const AddAssetInput: React.FC<AddAssetInputProps> = ({
     queryKey: ['crypto-search', debouncedInput],
     queryFn: () => cryptoService.searchCoins(debouncedInput),
     enabled: debouncedInput.length >= 2 && showSuggestions,
-    staleTime: 1000 * 60 * 2, // Cache for 2 minutes
+    staleTime: 1000 * 60 * 10, // Cache for 10 minutes 
     retry: 1, // Retry once for faster failure
   });
 
@@ -149,7 +149,9 @@ export const AddAssetInput: React.FC<AddAssetInputProps> = ({
       {hasError && debouncedInput.length >= 2 && (
         <Text style={styles.errorText}>
           {searchQuery.error?.message?.includes('429') 
-            ? 'Search rate limited. Please wait a moment.'
+            ? 'Search rate limited. Please wait a few minutes before trying again.'
+            : searchQuery.error?.message?.toLowerCase().includes('network')
+            ? 'Network issue. Please check your connection.'
             : 'Search failed. Please try again.'
           }
         </Text>

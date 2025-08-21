@@ -78,9 +78,10 @@ export function useCryptoQuotes() {
     queryKey: ['crypto-quotes', assetIds],
     queryFn: () => cryptoService.getQuotes(assetIds),
     enabled: assetIds.length > 0,
-    refetchInterval: 45000,  // Auto-refresh every 45 seconds
-    staleTime: 30000,        // Consider data stale after 30 seconds
-    retry: 2,                // Retry failed requests 2 times
+    refetchInterval: 300000,  // Auto-refresh every 5 minutes 
+    staleTime: 240000,        // Consider data stale after 4 minutes 
+    retry: 1,                 // Retry failed requests only once for faster failure
+    retryDelay: 5000,         // Wait 5 seconds before retry
   });
 }
 

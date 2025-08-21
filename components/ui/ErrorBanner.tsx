@@ -14,10 +14,33 @@ export const ErrorBanner: React.FC<ErrorBannerProps> = ({
   onDismiss,
   showRetry = true 
 }) => {
+  const isRateLimited = message.includes('429') || message.toLowerCase().includes('rate limit');
+  const isNetworkError = message.toLowerCase().includes('network') || message.toLowerCase().includes('fetch');
+  
+  const getErrorMessage = () => {
+    if (isRateLimited) {
+      return 'API rate limit reached. Please wait a few minutes before retrying.';
+    }
+    if (isNetworkError) {
+      return 'Network connection issue. Please check your internet connection.';
+    }
+    return message;
+  };
+
+  const getRetryText = () => {
+    if (isRateLimited) {
+      return 'Wait & Retry';
+    }
+    if (isNetworkError) {
+      return 'Retry';
+    }
+    return 'Retry';
+  };
+  
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.message}>{message}</Text>
+        <Text style={styles.message}>{getErrorMessage()}</Text>
         
         <View style={styles.actions}>
           {showRetry && (
@@ -28,7 +51,7 @@ export const ErrorBanner: React.FC<ErrorBannerProps> = ({
                 pressed && styles.retryButtonPressed
               ]}
             >
-              <Text style={styles.retryText}>Retry</Text>
+              <Text style={styles.retryText}>{getRetryText()}</Text>
             </Pressable>
           )}
           
