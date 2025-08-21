@@ -4,11 +4,10 @@ A simple cryptocurrency tracking application built with React Native, Expo, and 
 
 ## Features
 
-- **Real-time Crypto Tracking**: Monitor Bitcoin, Ethereum, and other cryptocurrencies
+- **Crypto Tracking**: Monitor Bitcoin, Ethereum, and other cryptocurrencies
 - **Dark Theme UI**: Modern, eye-friendly dark interface
 - **Search & Add**: Find and add new cryptocurrencies to your watchlist
 - **Swipe-to-Delete**: Intuitive gesture-based asset removal
-- **Performance Optimized**: Debounced search, intelligent caching, and rate limit handling
 - **Cross-Platform**: Works on both iOS and Android
 
 ## Tech Stack
